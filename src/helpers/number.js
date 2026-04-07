@@ -1,18 +1,24 @@
+const { parse } = require('date-fns')
 const get = require('lodash.get')
 const isEmpty = require('lodash.isempty')
 
 const intlFormat = (n = '') => n.replace(',', '.')
 
-const toNumber = str => parseFloat(intlFormat(str)).toFixed(2)
+const toNumber = str => {
+  if (isEmpty(str))
+    return '0.00'
+  
+  const num = parseFloat(intlFormat(str))
+  return isNaN(num) ? '0.00' : num.toFixed(2)
+}
 
 const handleTransaction = operation => {
-  const paidOut = get(operation, 'Paid Out (EUR)')
-  const paidIn = get(operation, 'Paid In (EUR)')
+  const amount = get(operation, 'Amount', '0')
 
-  if (isEmpty(paidOut))
-    return toNumber(paidIn)
+  if (parseFloat(amount) <= 0)
+    return toNumber(amount)
 
-  return toNumber(`-${paidOut}`)
+  return `-${toNumber(amount)}`
 }
 
 module.exports = handleTransaction

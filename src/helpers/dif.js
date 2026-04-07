@@ -6,19 +6,18 @@ const handleTransaction = require('./number')
 const handleDate = require('./date')
 
 const convert = buffer => {
-  const columns = buffer[0].split(';')
+  const columns = buffer[0].split(',')
 
   const data = buffer
     .slice(1)
     .filter(line => !isEmpty(line))
-    .map(line =>
-      line
-        .split(';')
-        .reduce((acc, curr, index) => ({
-          ...acc,
-          [columns[index].trim()]: curr.trim(),
-        }), {}),
-    )
+    .map(line => {
+      const fields = line.trim().split(',')
+      return fields.reduce((acc, curr, index) => ({
+        ...acc,
+        [columns[index].trim()]: curr.trim(),
+      }), {})
+    })
     .map(operation => {
       const date = handleDate(operation)
       const transaction = handleTransaction(operation)
@@ -29,7 +28,7 @@ const convert = buffer => {
         `T${transaction}`,
         `P${label}`,
         '^',
-      ].join(EOL)
+      ].join('\n')
     })
 
   return data
